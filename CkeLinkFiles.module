@@ -1,0 +1,103 @@
+<?php
+
+/**
+ * CKEditor Link Files
+ *
+ * @author Robin Sallis
+ *
+ * ProcessWire 3.x
+ * Copyright (C) 2011 by Ryan Cramer
+ * Licensed under GNU/GPL v2, see LICENSE.TXT
+ *
+ * http://www.processwire.com
+ * http://www.ryancramer.com
+ *
+ */
+
+class CkeLinkFiles extends WireData implements Module {
+
+	/**
+	 * Module information
+	 */
+	public static function getModuleInfo() {
+		return array(
+			'title' => 'CKEditor Link Files',
+			'version' => '0.1.0',
+			'summary' => 'Adds a menu to CKEditor to allow the quick insertion of links to files.',
+			'author' => 'Robin Sallis',
+			'href' => 'https://github.com/Toutouwai/CkeLinkFiles',
+			'icon' => 'link',
+			'autoload' => 'template=admin',
+		);
+	}
+
+	/**
+	 * Ready
+	 */
+	public function ready() {
+		$this->addHookBefore('ProcessModule::executeEdit', $this, 'ajaxResponse');
+		$this->addHookAfter('ProcessPageEdit::execute', $this, 'pageEditMods');
+	}
+
+	/**
+	 * Return AJAX response
+	 *
+	 * @param HookEvent $event
+	 */
+	public function ajaxResponse(HookEvent $event) {
+		if(!$this->config->ajax || $this->input->get->name !== $this->className()) return;
+		$event->replace = true;
+		$result = array();
+		if($this->input->get->pid) {
+			$page = $this->pages->get( (int) $this->input->get->pid );
+			foreach($page->fields->find('type=FieldtypeFile') as $f) {
+				foreach($page->getUnformatted($f->name) as $file) $result[] = array(
+					'url'=> $file->url,
+					'basename' => $file->basename,
+					'description' => $file->description
+				);
+			}
+		}
+		$event->return = json_encode($result);
+	}
+
+	/**
+	 * Mods to ProcessPageEdit
+	 *
+	 * @param HookEvent $event
+	 */
+	public function pageEditMods(HookEvent $event) {
+		// Return if ProcessPageEdit is being loaded via AJAX (image field)
+		if($this->config->ajax) return;
+
+		$page = $event->object->getPage();
+		$out = $event->return;
+
+		// Add CKEditor config JS
+		$js = '';
+		$js_config = $this->config->js();
+		foreach ($js_config as $key => $value) {
+			if(strpos($key, 'InputfieldCKEditor_') !== false) $js .= "config.$key.extraPlugins += ',linkfilesmenu';";
+		}
+		if(!$js) return; // return if no CKEditor fields
+		$plugins_path = $this->config->urls->$this . 'plugin';
+		$js = "CKEDITOR.plugins.addExternal('linkfilesmenu', '{$plugins_path}/linkfilesmenu/');" . $js;
+		$out .= "<script>$js</script>";
+
+		// Add scripts and styles
+		$config = $this->config;
+		$info = $this->getModuleInfo();
+		$version = (int) $info['version'];
+		$config->styles->add($config->urls->$this . "{$this}.css?v=$version");
+
+		// Data to JS
+		$data = array();
+		$data['page_id'] = $page->id;
+		$data['all_files_text'] = '* ' . $this->_('Insert links to all files') . ' *';
+		$data['no_files_text'] = $this->_('No files on this page');
+		$this->config->js($this->className(), $data);
+
+		$event->return = $out;
+	}
+
+}
