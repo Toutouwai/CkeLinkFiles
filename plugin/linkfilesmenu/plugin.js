@@ -14,8 +14,8 @@ CKEDITOR.plugins.add('linkfilesmenu', {
 		var cke_id = $orig_element.attr('id');
 		editor.addCommand('showLinkFilesMenu', {
 			exec: function(editor) {
-				var $container = $(editor.element.$).parent('.InputfieldContent');
-				var $button = $container.find('.cke_button__linkfilesmenu');
+				var $container = $(editor.element.$).siblings('div[id^="cke_Inputfield_"]').first();
+				var $button = $container.find('.cke_button__linkfilesmenu').first();
 				var $menu = $('#link-files-menu');
 				if(!$menu.length) return;
 				$menu.data('cke-id', cke_id);

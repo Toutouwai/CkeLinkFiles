@@ -22,7 +22,7 @@ class CkeLinkFiles extends WireData implements Module {
 	public static function getModuleInfo() {
 		return array(
 			'title' => 'CKEditor Link Files',
-			'version' => '0.1.1',
+			'version' => '0.1.2',
 			'summary' => 'Adds a menu to CKEditor to allow the quick insertion of links to files.',
 			'author' => 'Robin Sallis',
 			'href' => 'https://github.com/Toutouwai/CkeLinkFiles',
