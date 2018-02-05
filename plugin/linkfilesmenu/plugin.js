@@ -14,8 +14,9 @@ CKEDITOR.plugins.add('linkfilesmenu', {
 		var cke_id = $orig_element.attr('id');
 		editor.addCommand('showLinkFilesMenu', {
 			exec: function(editor) {
-				var $container = $(editor.element.$).siblings('div[id^="cke_Inputfield_"]').first();
-				var $button = $container.find('.cke_button__linkfilesmenu').first();
+				var $editor = $(editor.element.$);
+				var $cke_outer = $('#cke_' + $editor.attr('id'));
+				var $button = $cke_outer.find('.cke_button__linkfilesmenu').first();
 				var $menu = $('#link-files-menu');
 				if(!$menu.length) return;
 				$menu.data('cke-id', cke_id);
@@ -23,7 +24,6 @@ CKEDITOR.plugins.add('linkfilesmenu', {
 					$button.addClass('cke_button_on');
 					var button_offset_top = $button.offset().top;
 					var button_offset_left = $button.offset().left;
-					$container.css('position', 'relative');
 					$menu.css({ top: button_offset_top + 27, left: button_offset_left });
 					$menu.show();
 				} else {
