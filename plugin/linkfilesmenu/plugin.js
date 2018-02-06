@@ -103,7 +103,7 @@ $(function() {
 
 function addFilesMenu(page_id) {
 	$('#link-files-menu').remove();
-	var ajax_url = ProcessWire.config.urls.admin + 'module/edit?name=CkeLinkFiles&pid=' + page_id;
+	var ajax_url = config.urls.admin + 'module/edit?name=CkeLinkFiles&pid=' + page_id;
 	var $list = $('<ul></ul>');
 	$.getJSON(ajax_url).done(function(data) {
 		if(data.length) {

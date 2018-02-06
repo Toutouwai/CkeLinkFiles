@@ -22,7 +22,7 @@ class CkeLinkFiles extends WireData implements Module {
 	public static function getModuleInfo() {
 		return array(
 			'title' => 'CKEditor Link Files',
-			'version' => '0.1.3',
+			'version' => '0.1.4',
 			'summary' => 'Adds a menu to CKEditor to allow the quick insertion of links to files.',
 			'author' => 'Robin Sallis',
 			'href' => 'https://github.com/Toutouwai/CkeLinkFiles',
@@ -45,18 +45,19 @@ class CkeLinkFiles extends WireData implements Module {
 	 * @param HookEvent $event
 	 */
 	public function ajaxResponse(HookEvent $event) {
-		if(!$this->config->ajax || $this->input->get->name !== $this->className()) return;
+		// Must be AJAX request, must be for this module, must include pid GET variable
+		if(!$this->config->ajax || $this->input->get->name !== $this->className() || !$this->input->get->pid) return;
+		$page = $this->pages->get( (int) $this->input->get->pid );
+		if(!$page->editable) return;
 		$event->replace = true;
+		$event->cancelHooks	= true;
 		$result = array();
-		if($this->input->get->pid) {
-			$page = $this->pages->get( (int) $this->input->get->pid );
-			foreach($page->fields->find('type=FieldtypeFile') as $f) {
-				foreach($page->getUnformatted($f->name) as $file) $result[] = array(
-					'url'=> $file->url,
-					'basename' => $file->basename,
-					'description' => $file->description
-				);
-			}
+		foreach($page->fields->find('type=FieldtypeFile') as $f) {
+			foreach($page->getUnformatted($f->name) as $file) $result[] = array(
+				'url'=> $file->url,
+				'basename' => $file->basename,
+				'description' => $file->description
+			);
 		}
 		$event->return = json_encode($result);
 	}
