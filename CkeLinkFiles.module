@@ -89,7 +89,7 @@ class CkeLinkFiles extends WireData implements Module {
 		// Add scripts and styles
 		$config = $this->config;
 		$info = $this->getModuleInfo();
-		$version = (int) $info['version'];
+		$version = $info['version'];
 		$config->styles->add($config->urls->$this . "{$this}.css?v=$version");
 
 		// Data to JS
