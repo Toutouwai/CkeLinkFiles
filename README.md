@@ -12,7 +12,7 @@ A module for ProcessWire CMS/CMF. Adds a menu to CKEditor to allow the quick ins
 * If text is currently selected in the editor then the selected text is used as the link text.
 * Click "* Insert links to all files *" to insert an unordered list of links to all files on the page. Also works with the Alt-click option.
 * Menu is built via AJAX so newly uploaded files are included in the menu without the page needing to be saved. However, descriptions are not available for newly uploaded files until the page is saved.
-
+* There is an option in the module config to include files from Repeater fields in the edited page. Nested Repeater fields (files inside a Repeater inside another Repeater) are not supported.
 
 ## Installation
 

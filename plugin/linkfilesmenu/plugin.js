@@ -2,8 +2,29 @@
 * Link Files Menu plugin
 *
 * @author Robin Sallis: https://github.com/Toutouwai/CkeLinkFiles
-* @version 0.1.0
 */
+
+function addFilesMenu() {
+	$('#link-files-menu').remove();
+	var ajax_url = ProcessWire.config.urls.admin + 'login/logout/?request=CkeLinkFiles&pid=' + ProcessWire.config.CkeLinkFiles.page_id;
+	var $list = $('<ul></ul>');
+	$.getJSON(ajax_url).done(function(data) {
+		if(data.length) {
+			$.each(data, function(index, value) {
+				$list.append( $('<li data-url="' + value.url + '" title="' + value.description + '">' + value.basename + '</li>') );
+			});
+			$list.append( $('<li class="all-files">' + config.CkeLinkFiles.all_files_text + '</li>') );
+		} else {
+			$list.append( $('<li class="no-files">' + config.CkeLinkFiles.no_files_text + '</li>') );
+		}
+	});
+	$('body').append( $('<div id="link-files-menu"></div>').append($list) );
+}
+
+function hideMenu() {
+	$('.cke_button__linkfilesmenu').removeClass('cke_button_on');
+	$('#link-files-menu').hide();
+}
 
 CKEDITOR.plugins.add('linkfilesmenu', {
 	icons: 'linkfilesmenu',
@@ -37,22 +58,23 @@ CKEDITOR.plugins.add('linkfilesmenu', {
 			icon: 'linkfilesmenu',
 			command: 'showLinkFilesMenu'
 		});
+		editor.on('instanceReady', function() {
+			// Hide menu when clicking inside CKEditor window
+			this.document.on('click', hideMenu);
+		});
 	}
-
 });
 
 $(function() {
 
 	// Add menu on DOM ready
-	addFilesMenu(config.CkeLinkFiles.page_id);
+	addFilesMenu();
 
 	// Add menu after ajax file upload done
-	$(document).on('AjaxUploadDone', function() {
-		addFilesMenu(config.CkeLinkFiles.page_id);
-	});
+	$(document).on('AjaxUploadDone', addFilesMenu);
 
 	// Menu item clicked
-	$('body').on('click', '#link-files-menu li', function(event) {
+	$(document).on('click', '#link-files-menu li', function(event) {
 		var use_description = !!event.altKey;
 		var $menu = $('#link-files-menu');
 		var cke_id = $menu.data('cke-id');
@@ -61,7 +83,7 @@ $(function() {
 
 		if($(this).hasClass('no-files')) {
 			// No files
-			hideMenu($menu);
+			hideMenu();
 			return;
 		} else if($(this).hasClass('all-files')) {
 			// All files
@@ -86,7 +108,7 @@ $(function() {
 				var element = CKEDITOR.dom.element.createFromHtml('<a href="' + $(this).data('url') + '"></a>');
 				fragment.appendTo(element);
 				editor.insertElement(element);
-				hideMenu($menu);
+				hideMenu();
 				return;
 			} else if(use_description && $(this).attr('title').length) {
 				text = $(this).attr('title');
@@ -96,29 +118,14 @@ $(function() {
 			html = '<a href="' + $(this).data('url') + '">' + text + '</a>'
 		}
 		editor.insertHtml(html);
-		hideMenu($menu);
+		hideMenu();
+	});
+
+	// Hide menu when clicking outside of it
+	$(document).on('mousedown', function(event) {
+		var $target = $(event.target);
+		if($target.is('.cke_button__linkfilesmenu, .cke_button__linkfilesmenu_icon') || $target.is('#link-files-menu li')) return;
+		hideMenu();
 	});
 
 });
-
-function addFilesMenu(page_id) {
-	$('#link-files-menu').remove();
-	var ajax_url = config.urls.admin + 'login/logout/?request=CkeLinkFiles&pid=' + page_id;
-	var $list = $('<ul></ul>');
-	$.getJSON(ajax_url).done(function(data) {
-		if(data.length) {
-			$.each(data, function(index, value) {
-				$list.append( $('<li data-url="' + value.url + '" title="' + value.description + '">' + value.basename + '</li>') );
-			});
-			$list.append( $('<li class="all-files">' + config.CkeLinkFiles.all_files_text + '</li>') );
-		} else {
-			$list.append( $('<li class="no-files">' + config.CkeLinkFiles.no_files_text + '</li>') );
-		}
-	});
-	$('body').append( $('<div id="link-files-menu"></div>').append($list) );
-}
-
-function hideMenu($menu) {
-	$('.cke_button__linkfilesmenu').removeClass('cke_button_on');
-	$menu.hide();
-}
